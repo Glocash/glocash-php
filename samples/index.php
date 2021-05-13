@@ -1,9 +1,9 @@
 <?php
 /**
  * 直连模式
- * 技术联系人 chenrj 17602115638 微信同号
- * 文档地址 https://portal.glocash.com/merchant/index/document
- * 商户后台 https://portal.glocash.com/merchant/index/login
+ * 技术联系人 陈荣江 17602115638 微信同号
+ * 文档地址 https://docs.glocash.com/
+ * 商户后台 https://portal.glocashpayment.com/#/login
  *
  */
 
@@ -22,82 +22,66 @@
  */
 
 //TODO 请仔细查看TODO的注释 请仔细查看TODO的注释 请仔细查看TODO的注释
-
-
-$sandbox_url = 'https://sandbox.glocash.com/gateway/payment/ccDirect'; //测试地址
-$live_url    = 'http://pay.v2gc.test/gateway/payment/ccDirect'; //正式地址
+$sandbox_url = 'https://sandbox.glocashpayment.com/gateway/payment/ccDirect'; //测试地址
+$live_url    = 'https://pay.glocashpayment.com/gateway/payment/ccDirect'; //正式地址
 
 //秘钥 测试地址请用测试秘钥 正式地址用正式秘钥 请登录商户后台查看
-$sandbox_key = '85f89b981e120f601f6f9fcd65*********8a0b2eee937f48ad3e9b57bf67d9e'; //TODO 测试秘钥 商户后台查看
-$live_key = '776cecacb325b2e8e9d5e2dea122*********e6cd22d40e25935e64cb8a90da7'; //TODO 正式秘钥 商户后台查看(必须材料通过以后才能使用)
-
-
+$sandbox_key = '9dc6a0682d7cb718fa140d0b8017a01c4e9a9820beeb45da020601a2e0a63514'; //TODO 测试秘钥 商户后台查看
+$live_key = 'c2e38e7d93dbdd3efaa61028c3d27a1a2577df84fa62ae752df587b4f90b8ef7'; //TODO 正式秘钥 商户后台查看(必须材料通过以后才能使用)
 
 //支付参数
-$data[ 'REQ_SANDBOX' ]  = 0; //TODO 是否开启测试模式 注意秘钥是否对应
-$data[ 'REQ_EMAIL' ]    = 'rongjiang.chen@witsion.com'; //TODO 需要换成自己的 商户邮箱 商户后台申请的邮箱
-$data[ 'REQ_TIMES' ]    = time (); //请求时间
-$data[ 'REQ_INVOICE' ]  = 'TEST'.date ( "YmdHis" ).rand ( 1000, 9999 ); //订单号
-$data[ 'BIL_METHOD' ]   = 'C01'; //请求方式
-$data[ 'CUS_EMAIL' ]    = 'rongjiang.chen@witsion.com'; //客户邮箱
-$data[ 'BIL_PRICE' ]    = '0.1'; //价格
-$data[ 'BIL_CURRENCY' ] = 'USD'; //币种
-$data[ 'BIL_CC3DS' ]    = 1; //是否开启3ds 1 开启 0 不开启
-$data[ 'URL_SUCCESS' ]  = 'http://hs.crjblog.cn/success.php';//支付成功跳转页面
-$data[ 'URL_FAILED' ]   = 'http://hs.crjblog.cn/failed.php'; //支付失败跳转页面
-$data[ 'URL_NOTIFY' ]   = 'http://hs.crjblog.cn/notify.php'; //异步回调跳转页面
-
-$card = [
-    'BIL_CCNUMBER'  => '5546989999990033',            //信用卡卡号
-    'BIL_CCHOLDER'  => 'zuochengdong',          //信用卡持卡人姓名
-    'BIL_CCEXPM'    => '01',            //信用卡过期月份
-    'BIL_CCEXPY'    => '2022',            //信用卡过期年份
-    'BIL_CCCVV2'    => '1234',            //信用卡CVV2码
-    'BIL_IPADDR'    => '58.247.45.36',    //付款人IP
-    'BIL_GOODSNAME' => 'iphone xs ',         //商品名称或描述
-];
-
-//更多支付参数请参考文档 经典模式->附录2：付款请求参数表
-//签名
-$url = $data[ 'REQ_SANDBOX' ] ?$sandbox_url: $live_url;//根据REQ_SANDBOX调整地址
-$key = $data[ 'REQ_SANDBOX' ] ?$sandbox_key: $live_key;//根据REQ_SANDBOX调整秘钥
-echo $url;
-if ( !empty( $_POST ) ) {
-    $data               = array_merge ( $data, $_POST );
-    $data[ 'REQ_SIGN' ] = hash ( 'sha256', $key.$data[ 'REQ_TIMES' ].$data[ 'REQ_EMAIL' ].$data[ 'REQ_INVOICE' ].$data[ 'CUS_EMAIL' ].$data[ 'BIL_METHOD' ].$data[ 'BIL_PRICE' ].$data[ 'BIL_CURRENCY' ] );
-    try {
-        file_put_contents ('ccDirect.log',var_export ($url,true).PHP_EOL,FILE_APPEND);
-        file_put_contents ('ccDirect.log',var_export ($data,true).PHP_EOL,FILE_APPEND);
-
-        $data      = curl_request ( $url, 'post', $data, true );
-        $parseData = json_decode ( $data, true );
-
+$data['REQ_SANDBOX']  = 1; //TODO 是否开启测试模式 0 正式环境 1 测试环境
+$data['REQ_EMAIL']    = '2101653220@qq.com'; //TODO 商户邮箱 商户后台申请的邮箱
+$data['REQ_TIMES']    = time(); //请求时间
+$data['REQ_INVOICE']  = 'TEST'.date ( "YmdHis" ).rand ( 1000, 9999 ); //订单号
+$data['BIL_METHOD']   = 'C01'; //请求方式
+$data['REQ_MERCHANT']   = 'Merchant Name'; //请求方式
+$data['BIL_GOODSNAME']   = '#gold#Runescape/OSRS Old School/ 10M Gold'; //TODO 商品名称必填 而且必须是正确的否则无法结算
+$data['CUS_EMAIL']    = 'rongjiang.chen@witsion.com'; //客户邮箱
+$data['BIL_PRICE']    = '15'; //价格
+$data['BIL_CURRENCY'] = 'USD'; //币种
+$data['BIL_CC3DS']    = 1; //是否开启3ds 1 开启 0 不开启
+$data['URL_SUCCESS']  = 'http://example.v2gc.test/success.php';//支付成功跳转页面
+$data['URL_FAILED']   = 'http://example.v2gc.test/failed.php'; //支付失败跳转页面
+$data['URL_NOTIFY']   = 'http://example.v2gc.test/notify.php'; //异步回调跳转页面
+$data['MCH_DOMAIN_KEY']   = ''; //作为商户通知地址
+$data['BIL_CCNUMBER'] = '5200000000000106';  //信用卡卡号
+$data['BIL_CCHOLDER'] = 'john smith'; //信用卡持卡人姓名
+$data['BIL_CCEXPM'] = '04'; //信用卡过期月份
+$data['BIL_CCEXPY'] = '2022'; //信用卡过期年份
+$data['BIL_CCCVV2'] = '123'; //信用卡CVV2码
+$data['BIL_IPADDR'] = '58.247.45.36'; //付款人IP
+$data['BIL_GOODS_URL'] = 'https://www.merchant.com/goods/30'; //买家购买商户的链接
+$url = $data['REQ_SANDBOX'] ? $sandbox_url : $live_url;//根据REQ_SANDBOX调整地址
+$key = $data['REQ_SANDBOX'] ?$sandbox_key: $live_key;//根据REQ_SANDBOX调整秘钥
+$data['REQ_SIGN'] = hash ('sha256', $key.$data[ 'REQ_TIMES' ].$data[ 'REQ_EMAIL' ].$data[ 'REQ_INVOICE' ].$data[ 'CUS_EMAIL' ].$data[ 'BIL_METHOD' ].$data[ 'BIL_PRICE' ].$data[ 'BIL_CURRENCY' ] );
+try {
+    file_put_contents ('ccDirect.log',var_export ($url,true).PHP_EOL,FILE_APPEND);
+    file_put_contents ('ccDirect.log',var_export ($data,true).PHP_EOL,FILE_APPEND);
+    $data      = curl_request ( $url, 'post', $data, true );
+    $parseData = json_decode ( $data, true );
+    echo "<pre>"; print_r ($data); echo "</pre>";
+    echo "<pre>"; print_r ($parseData); echo "</pre>";
+    if ( isset( $parseData[ 'REQ_ERROR' ] ) ) {
+        echo "<pre>"; print_r ( $parseData ); echo "</pre>";
+        die();
+    }
+    file_put_contents ('ccDirect.log',var_export ($data,true).PHP_EOL,FILE_APPEND);
+    file_put_contents ('ccDirect.log',var_export ($parseData,true).PHP_EOL,FILE_APPEND);
+    if ( $data&&$parseData ) {
+        header ( 'HTTP/1.1 301 Moved Permanently' );
+        header ( 'Location: '.$parseData[ 'URL_CC3DS' ] );
+    }
+    else {
         echo "<pre>";
-        print_r ($data);
-        echo "</pre>";
-        if ( isset( $parseData[ 'REQ_ERROR' ] ) ) {
-            echo "<pre>";
-            print_r ( $parseData );
-            echo "</pre>";
-            die;
-        }
-        file_put_contents ('ccDirect.log',var_export ($data,true).PHP_EOL,FILE_APPEND);
-        file_put_contents ('ccDirect.log',var_export ($parseData,true).PHP_EOL,FILE_APPEND);
-        if ( $data&&$parseData ) {
-            header ( 'HTTP/1.1 301 Moved Permanently' );
-            header ( 'Location: '.$parseData[ 'URL_CC3DS' ] );
-        }
-        else {
-            echo "<pre>";
-            print_r ( $parseData );
-            print_r ( $data );
-            echo "</pre>";
-        }
-    }catch ( Exception $e ) {
-        echo "<pre>";
-        print_r ( $e->getMessage () );
+        print_r ( $parseData );
+        print_r ( $data );
         echo "</pre>";
     }
+}catch ( Exception $e ) {
+    echo "<pre>";
+    print_r ( $e->getMessage () );
+    echo "</pre>";
 }
 
 function curl_request ( $url, $method = 'post', $data = null, $https = true )
@@ -127,17 +111,6 @@ function curl_request ( $url, $method = 'post', $data = null, $https = true )
 }
 
 
-?>
-<html>
-<body>
-<form method="post" action="index.php">
-    <?php foreach ( $card as $key => $val ) { ?>
-        <div><span style="display: inline-block;width: 150px;text-align: right;padding-right: 15px;"><?php echo $key; ?>
-                :</span><input value="<?php echo $val; ?>" name="<?php echo $key; ?>"/></div>
-    <?php } ?>
-    <input type="submit" value="提交"/>
-</form>
-</body>
-</html>
+
 
 
