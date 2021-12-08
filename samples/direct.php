@@ -1,8 +1,8 @@
 <?php
 /**
- * 经典模式
+ * 直连模式
  * 技术联系人 陈荣江 17602115638 微信同号
- * 文档地址 https://docs.glocash.com
+ * 文档地址 https://docs.glocash.com/
  * 商户后台 https://portal.glocashpayment.com/#/login
  */
 
@@ -18,9 +18,10 @@
  *   MC   | 5200000000000106 | 04/2022 | 578 | 104 3ds paid
  *
  */
+
 //TODO 请仔细查看TODO的注释 请仔细查看TODO的注释 请仔细查看TODO的注释
-$sandbox_url = 'https://sandbox.glocashpayment.com/gateway/payment/index'; //测试地址
-$live_url = 'https://pay.glocashpayment.com/gateway/payment/index'; //正式地址
+$sandbox_url = 'https://sandbox.glocashpayment.com/gateway/payment/ccDirect'; //测试地址
+$live_url    = 'https://pay.glocashpayment.com/gateway/payment/ccDirect'; //正式地址
 
 //秘钥 测试地址请用测试秘钥 正式地址用正式秘钥 请登录商户后台查看
 $sandbox_key = '9dc6a0682d7cb718fa140d0b8017a01c4e9a9820beeb45da020601a2e0a63514'; //TODO 测试秘钥 商户后台查看
@@ -42,66 +43,70 @@ $data['URL_SUCCESS']  = 'http://example.v2gc.test/success.php';//支付成功跳
 $data['URL_FAILED']   = 'http://example.v2gc.test/failed.php'; //支付失败跳转页面
 $data['URL_NOTIFY']   = 'http://example.v2gc.test/notify.php'; //异步回调跳转页面
 $data['MCH_DOMAIN_KEY']   = ''; //作为商户通知地址
+$data['BIL_CCNUMBER'] = '5200000000000106';  //信用卡卡号
+$data['BIL_CCHOLDER'] = 'john smith'; //信用卡持卡人姓名
+$data['BIL_CCEXPM'] = '04'; //信用卡过期月份
+$data['BIL_CCEXPY'] = '2022'; //信用卡过期年份
+$data['BIL_CCCVV2'] = '123'; //信用卡CVV2码
+$data['BIL_IPADDR'] = '58.247.45.36'; //付款人IP
+$data['BIL_GOODS_URL'] = 'https://www.merchant.com/goods/30'; //买家购买商户的链接
 $url = $data['REQ_SANDBOX'] ? $sandbox_url : $live_url;//根据REQ_SANDBOX调整地址
 $key = $data['REQ_SANDBOX'] ?$sandbox_key: $live_key;//根据REQ_SANDBOX调整秘钥
-
-$data['REQ_SIGN']   = hash('sha256', $key . $data['REQ_TIMES'] . $data['REQ_EMAIL'] . $data['REQ_INVOICE'] . $data['CUS_EMAIL'] . $data['BIL_METHOD'] . $data['BIL_PRICE'] . $data['BIL_CURRENCY']);
+$data['REQ_SIGN'] = hash ('sha256', $key.$data[ 'REQ_TIMES' ].$data[ 'REQ_EMAIL' ].$data[ 'REQ_INVOICE' ].$data[ 'CUS_EMAIL' ].$data[ 'BIL_METHOD' ].$data[ 'BIL_PRICE' ].$data[ 'BIL_CURRENCY' ] );
 try {
-    file_put_contents ('request.log',var_export ($url,true).PHP_EOL,FILE_APPEND);
-    file_put_contents ('request.log',var_export ($data,true).PHP_EOL,FILE_APPEND);
-    $res = file_get_contents($url);
-    $data      = curl_request($url, 'post', $data, true);
-    $parseData = json_decode($data, true);
-    if(isset($parseData['REQ_ERROR'])){
-        echo "<pre>";
-        print_r($parseData);
-        echo "</pre>";die;
+    file_put_contents ('ccDirect.log',var_export ($url,true).PHP_EOL,FILE_APPEND);
+    file_put_contents ('ccDirect.log',var_export ($data,true).PHP_EOL,FILE_APPEND);
+    $data      = curl_request ( $url, 'post', $data, true );
+    $parseData = json_decode ( $data, true );
+    echo "<pre>"; print_r ($data); echo "</pre>";
+    echo "<pre>"; print_r ($parseData); echo "</pre>";
+    if ( isset( $parseData[ 'REQ_ERROR' ] ) ) {
+        echo "<pre>"; print_r ( $parseData ); echo "</pre>";
+        die();
     }
-    file_put_contents ('request.log',var_export ($data,true).PHP_EOL,FILE_APPEND);
-    file_put_contents ('request.log',var_export ($parseData,true).PHP_EOL,FILE_APPEND);
-    if ($data && $parseData) {
-        header('HTTP/1.1 301 Moved Permanently');
-        header('Location: ' . $parseData['URL_PAYMENT']);
-    } else {
-        echo "<pre>";
-        print_r($parseData);
-        print_r($data);
-        echo "</pre>";die;
+    file_put_contents ('ccDirect.log',var_export ($data,true).PHP_EOL,FILE_APPEND);
+    file_put_contents ('ccDirect.log',var_export ($parseData,true).PHP_EOL,FILE_APPEND);
+    if ( $data&&$parseData ) {
+        header ( 'HTTP/1.1 301 Moved Permanently' );
+        header ( 'Location: '.$parseData[ 'URL_CC3DS' ] );
     }
-} catch (Exception $e) {
+    else {
+        echo "<pre>";
+        print_r ( $parseData );
+        print_r ( $data );
+        echo "</pre>";
+    }
+}catch ( Exception $e ) {
     echo "<pre>";
-    print_r($e->getMessage());
-    echo "</pre>";die;
+    print_r ( $e->getMessage () );
+    echo "</pre>";
 }
-function curl_request($url, $method = 'get', $data = null, $https = true)
+
+function curl_request ( $url, $method = 'post', $data = null, $https = true )
 {
     //1.初识化curl
-    $ch = curl_init($url);
+    $ch = curl_init ( $url );
     //2.根据实际请求需求进行参数封装
     //返回数据不直接输出
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, true );
     //如果是https请求
-    if ($https === true) {
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    if ( $https === true ) {
+        curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, false );
+        curl_setopt ( $ch, CURLOPT_SSL_VERIFYHOST, false );
     }
     //如果是post请求
-    if ($method === 'post') {
+    if ( $method === 'post' ) {
         //开启发送post请求选项
-        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt ( $ch, CURLOPT_POST, true );
         //发送post的数据
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt ( $ch, CURLOPT_POSTFIELDS, $data );
     }
     //3.发送请求
-    $result = curl_exec($ch);
-    if($result === false){
-        return curl_error($ch);
-    }
+    $result = curl_exec ( $ch );
     //4.返回返回值，关闭连接
-    curl_close($ch);
+    curl_close ( $ch );
     return $result;
 }
-
 
 
 
