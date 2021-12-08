@@ -17,7 +17,6 @@
  *   MC   | 5200000000000023 | 03/2022 | 431 | 74  3ds paid
  *   MC   | 5200000000000106 | 04/2022 | 578 | 104 3ds paid
  *
- *  想测试失败 可以填错年月日或者ccv即可
  */
 //TODO 请仔细查看TODO的注释 请仔细查看TODO的注释 请仔细查看TODO的注释
 $sandbox_url = 'https://sandbox.glocashpayment.com/gateway/payment/index'; //测试地址
